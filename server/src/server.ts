@@ -36,11 +36,17 @@ const mapOutput = (entry: FileSystemEntry, pathSegments: string[]): Entry => {
 
 const filterEntries = (entries: any[], where?: Maybe<WhereInput>): any[] => {
   if (where) {
+    const lt = where.size_lt ?? 0
+    const gt = where.size_gt ?? 0
+
+    // error for illogical sizing parameters
+    if ((lt && gt) && lt < gt) {
+      throw new Error(`Ivalid size range size_lt must be smaller than size_gt`);
+    }
+
     return compact(
       map(entries, (entry) => {
         let tmpEntry: FileSystemEntry | undefined = lookupPath(entry.path.split('/'))
-        const lt = where.size_lt ?? 0
-        const gt = where.size_gt ?? 0
 
         // Type
         if (where.type_eq) {
@@ -51,7 +57,8 @@ const filterEntries = (entries: any[], where?: Maybe<WhereInput>): any[] => {
         // Size
         if (tmpEntry?.isFile) {
           if (where.size_lt && where.size_gt) {
-            if (tmpEntry.size < gt && tmpEntry.size > lt) tmpEntry = undefined
+            // Want to filter if file is too big or too small
+            if (tmpEntry.size < gt || tmpEntry.size > lt) tmpEntry = undefined
           } else if (where.size_lt && !where.size_gt) {
             if (tmpEntry.size > lt) tmpEntry = undefined
           } else if (where.size_gt && !where.size_lt) {
@@ -61,7 +68,8 @@ const filterEntries = (entries: any[], where?: Maybe<WhereInput>): any[] => {
 
         // Name
         if (where.name_contains) {
-          if (!tmpEntry?.name.toLowerCase().includes(where.name_contains)) tmpEntry = undefined
+          // Updated to accept any case on input
+          if (!tmpEntry?.name.toLowerCase().includes(where.name_contains.toLowerCase())) tmpEntry = undefined
         }
 
         return tmpEntry ? entry : undefined
@@ -74,7 +82,7 @@ const filterEntries = (entries: any[], where?: Maybe<WhereInput>): any[] => {
 
 const PAGE_SIZE = 25;
 const slicePage = <T>(
-  entries: T[], 
+  entries: T[],
   page: number,
 ) => {
   const pageCount = Math.ceil(entries.length / PAGE_SIZE);
@@ -90,10 +98,10 @@ const slicePage = <T>(
 };
 
 const buildPagination = (
-  entries: any[], 
+  entries: any[],
   page: number,
 ): Pagination => {
-  
+
   return {
     page,
     pageCount: Math.ceil(entries.length / PAGE_SIZE),
