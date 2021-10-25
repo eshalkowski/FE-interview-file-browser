@@ -17,7 +17,6 @@ export type Query = {
   listEntries?: Maybe<ListEntriesResult>;
 };
 
-
 export type QueryListEntriesArgs = {
   path: Scalars['String'];
   page?: Maybe<Scalars['Int']>;
@@ -70,53 +69,57 @@ export type ListEntriesQueryVariables = Exact<{
   where?: Maybe<WhereInput>;
 }>;
 
-
-export type ListEntriesQuery = (
-  { __typename?: 'Query' }
-  & { listEntries?: Maybe<(
-    { __typename?: 'ListEntriesResult' }
-    & { pagination: (
-      { __typename?: 'Pagination' }
-      & Pick<Pagination, 'page' | 'pageCount' | 'prevPage' | 'nextPage' | 'totalRows'>
-    ), entries: Array<Maybe<(
-      { __typename: 'File' }
-      & Pick<File, 'id' | 'path' | 'name' | 'size' | 'lastModified'>
-    ) | (
-      { __typename: 'Directory' }
-      & Pick<Directory, 'id' | 'path' | 'name'>
-    )>> }
-  )> }
-);
-
+export type ListEntriesQuery = { __typename?: 'Query' } & {
+  listEntries?: Maybe<
+    { __typename?: 'ListEntriesResult' } & {
+      pagination: { __typename?: 'Pagination' } & Pick<
+        Pagination,
+        'page' | 'pageCount' | 'prevPage' | 'nextPage' | 'totalRows'
+      >;
+      entries: Array<
+        Maybe<
+          | ({ __typename: 'File' } & Pick<
+              File,
+              'id' | 'path' | 'name' | 'size' | 'lastModified'
+            >)
+          | ({ __typename: 'Directory' } & Pick<
+              Directory,
+              'id' | 'path' | 'name'
+            >)
+        >
+      >;
+    }
+  >;
+};
 
 export const ListEntriesDocument = gql`
-    query ListEntries($path: String!, $page: Int, $where: WhereInput) {
-  listEntries(path: $path, page: $page, where: $where) {
-    pagination {
-      page
-      pageCount
-      prevPage
-      nextPage
-      totalRows
-    }
-    entries {
-      __typename
-      ... on File {
-        id
-        path
-        name
-        size
-        lastModified
+  query ListEntries($path: String!, $page: Int, $where: WhereInput) {
+    listEntries(path: $path, page: $page, where: $where) {
+      pagination {
+        page
+        pageCount
+        prevPage
+        nextPage
+        totalRows
       }
-      ... on Directory {
-        id
-        path
-        name
+      entries {
+        __typename
+        ... on File {
+          id
+          path
+          name
+          size
+          lastModified
+        }
+        ... on Directory {
+          id
+          path
+          name
+        }
       }
     }
   }
-}
-    `;
+`;
 
 /**
  * __useListEntriesQuery__
@@ -136,12 +139,33 @@ export const ListEntriesDocument = gql`
  *   },
  * });
  */
-export function useListEntriesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<ListEntriesQuery, ListEntriesQueryVariables>) {
-        return ApolloReactHooks.useQuery<ListEntriesQuery, ListEntriesQueryVariables>(ListEntriesDocument, baseOptions);
-      }
-export function useListEntriesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<ListEntriesQuery, ListEntriesQueryVariables>) {
-          return ApolloReactHooks.useLazyQuery<ListEntriesQuery, ListEntriesQueryVariables>(ListEntriesDocument, baseOptions);
-        }
+export function useListEntriesQuery(
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
+    ListEntriesQuery,
+    ListEntriesQueryVariables
+  >
+) {
+  return ApolloReactHooks.useQuery<ListEntriesQuery, ListEntriesQueryVariables>(
+    ListEntriesDocument,
+    baseOptions
+  );
+}
+export function useListEntriesLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    ListEntriesQuery,
+    ListEntriesQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
+    ListEntriesQuery,
+    ListEntriesQueryVariables
+  >(ListEntriesDocument, baseOptions);
+}
 export type ListEntriesQueryHookResult = ReturnType<typeof useListEntriesQuery>;
-export type ListEntriesLazyQueryHookResult = ReturnType<typeof useListEntriesLazyQuery>;
-export type ListEntriesQueryResult = ApolloReactCommon.QueryResult<ListEntriesQuery, ListEntriesQueryVariables>;
+export type ListEntriesLazyQueryHookResult = ReturnType<
+  typeof useListEntriesLazyQuery
+>;
+export type ListEntriesQueryResult = ApolloReactCommon.QueryResult<
+  ListEntriesQuery,
+  ListEntriesQueryVariables
+>;
